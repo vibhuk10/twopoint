@@ -1,0 +1,6 @@
+install.packages("usethis")
+library(usethis)
+use_git()
+use_github(protocol = "https", private = FALSE)
+browse_github_token()
+edit_r_environ()
