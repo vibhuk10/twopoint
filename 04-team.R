@@ -14,4 +14,5 @@ twopoint %>%
   count(posteam, two_point_conv_result) %>% 
   mutate(posteam = fct_reorder(posteam, n, sum)) %>% 
   ggplot() +
-  geom_col(aes(x=n, y = posteam, fill = two_point_conv_result))
+  geom_col(aes(x=n, y = posteam, fill = two_point_conv_result)) +
+  scale_fill_manual(values = c("red", "#228B22"))
