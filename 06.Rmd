@@ -1,0 +1,23 @@
+---
+title: "Plots"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+twopoint <- read_csv("data-clean/twopoint_2009-2018.csv")
+```
+
+# plotting
+
+make a plot
+
+```{r}
+twopoint %>%
+  count(posteam, two_point_conv_result) %>% 
+  mutate(posteam = fct_reorder(posteam, n, sum)) %>% 
+  ggplot() +
+  geom_col(aes(x=n, y = posteam, fill = two_point_conv_result))
+```
+
