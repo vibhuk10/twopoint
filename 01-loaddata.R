@@ -9,7 +9,7 @@ twopoint %>% write_csv("data-clean/twopoint_2009-2018.csv")
 View(data)
 
 data %>% 
-  select(game_id, home_team, away_team, score_differential) %>% 
+  select(game_id, posteam, home_team, away_team, score_differential) %>% 
   group_by(game_id) %>% 
   slice(n()-1) %>% 
   ungroup()
