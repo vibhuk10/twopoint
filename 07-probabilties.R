@@ -52,12 +52,6 @@ prediction %>%
   count(comeback, prob) %>% 
   mutate(comeback = fct_reorder(comeback, n, sum)) %>% 
   ggplot() +
-  geom_col(aes(x=comeback, y = n, fill = prob), position = "fill") +
-  scale_fill_manual(values = c("#565656", "blue")) +
+  geom_col(aes(x=comeback, y = prob, fill = prob), ylim = c(0,100)) +
+  scale_fill_manual(values = c("black", "#6d6d6d", "#373737")) +
   labs(x = "end result")
-
-
-
-
-
-
