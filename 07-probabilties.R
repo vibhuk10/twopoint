@@ -1,5 +1,5 @@
 set1 <- data %>% 
-          filter(qtr == 4 & quarter_seconds_remaining>600 & quarter_seconds_remaining<700 & score_differential == -7) %>% 
+          filter(qtr == 3 & quarter_seconds_remaining>600 & quarter_seconds_remaining<700 & score_differential == -7) %>% 
           select(game_id, posteam, home_team, away_team, score_differential, qtr, quarter_seconds_remaining, desc, game_date) %>% 
           group_by(game_id) %>% 
           slice(n()-1) %>% 
@@ -29,7 +29,16 @@ set3 <- set3 %>%
 set3 <- set3 %>% 
   mutate(overtime = ifelse(qtr2 == 5, TRUE, FALSE))
 
-set3 %>% count(comeback)
+prediction <- set3 %>% count(comeback)
+prediction <- prediction %>% 
+                mutate(prob = n/(sum(n)))
+prediction <- prediction %>% 
+                mutate(prob = (prob*100))
+prediction <- prediction %>% 
+                mutate(prob = round(prob, digits = 2))
+prediction <- prediction %>% 
+                mutate(prob = paste0(prob, "%"))
+prediction
 
 set3 %>%
   count(comeback, overtime) %>% 
@@ -38,6 +47,15 @@ set3 %>%
   geom_col(aes(x=comeback, y = n, fill = overtime)) +
   scale_fill_manual(values = c("#565656", "blue")) +
   labs(x = "end result")
+
+prediction %>%
+  count(comeback, prob) %>% 
+  mutate(comeback = fct_reorder(comeback, n, sum)) %>% 
+  ggplot() +
+  geom_col(aes(x=comeback, y = n, fill = prob), position = "fill") +
+  scale_fill_manual(values = c("#565656", "blue")) +
+  labs(x = "end result")
+
 
 
 

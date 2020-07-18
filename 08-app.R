@@ -112,7 +112,16 @@ server <- function(input, output) {
       set3 <- set3 %>% 
         mutate(overtime = ifelse(qtr2 == 5, TRUE, FALSE))
       
-      set3 %>% count(comeback)
+      prediction <- set3 %>% count(comeback)
+      prediction <- prediction %>% 
+        mutate(prob = n/(sum(n)))
+      prediction <- prediction %>% 
+        mutate(prob = (prob*100))
+      prediction <- prediction %>% 
+        mutate(prob = round(prob, digits = 2))
+      prediction <- prediction %>% 
+        mutate(prob = paste0(prob, "%"))
+      prediction
       
     })
 }
