@@ -55,7 +55,7 @@ server <- function(input, output) {
         set3 <- merge(set1,set2, by="game_id")
         
         set3 <- set3 %>% 
-          mutate(score_differential2 = ifelse(posteam == away_team, -score_differential2, score_differential))
+          mutate(score_differential2 = ifelse(posteam == away_team, -score_differential2, score_differential2))
         set3 <- set3 %>% 
           mutate(
             comeback = case_when(
@@ -101,7 +101,7 @@ server <- function(input, output) {
       set3 <- merge(set1,set2, by="game_id")
       
       set3 <- set3 %>% 
-        mutate(score_differential2 = ifelse(posteam == away_team, -score_differential2, score_differential))
+        mutate(score_differential2 = ifelse(posteam == away_team, -score_differential2, score_differential2))
       set3 <- set3 %>% 
         mutate(
           comeback = case_when(
@@ -117,16 +117,12 @@ server <- function(input, output) {
       prediction <- prediction %>% 
         mutate(prob = n/(sum(n)))
       prediction <- prediction %>% 
-        mutate(prob = (prob*100))
-      prediction <- prediction %>% 
         mutate(prob = round(prob, digits = 2))
-      prediction <- prediction %>% 
-        mutate(prob = paste0(prob, "%"))
       
       prediction_graph <- prediction %>%
         ggplot() +
-        geom_col(aes(x=comeback, y = prob, fill = prob)) +
-        scale_fill_manual(values = c("black", "#6d6d6d", "#373737")) +
+        geom_col(aes(x=comeback, y = prob)) +
+        scale_y_continuous(labels = scales::percent) +
         labs(x = "end result")
       prediction_graph
       
@@ -156,7 +152,7 @@ server <- function(input, output) {
       set3 <- merge(set1,set2, by="game_id")
       
       set3 <- set3 %>% 
-        mutate(score_differential2 = ifelse(posteam == away_team, -score_differential2, score_differential))
+        mutate(score_differential2 = ifelse(posteam == away_team, -score_differential2, score_differential2))
       set3 <- set3 %>% 
         mutate(
           comeback = case_when(
@@ -175,8 +171,6 @@ server <- function(input, output) {
         mutate(prob = (prob*100))
       prediction <- prediction %>% 
         mutate(prob = round(prob, digits = 2))
-      prediction <- prediction %>% 
-        mutate(prob = paste0(prob, "%"))
       prediction
       
     })

@@ -1,5 +1,5 @@
 set1 <- data %>% 
-          filter(qtr == 3 & quarter_seconds_remaining>600 & quarter_seconds_remaining<700 & score_differential == -7) %>% 
+          filter(qtr == 4 & quarter_seconds_remaining>600 & quarter_seconds_remaining<700 & score_differential == 0) %>% 
           select(game_id, posteam, home_team, away_team, score_differential, qtr, quarter_seconds_remaining, desc, game_date) %>% 
           group_by(game_id) %>% 
           slice(n()-1) %>% 
@@ -11,13 +11,14 @@ set2 <- data %>%
           group_by(game_id) %>% 
           slice(n()) %>% 
           ungroup()
+
 set2 <- set2 %>% 
           mutate(score_differential2 = total_home_score-total_away_score)
 
-set3 <- merge(set1,set2, by="game_id")
+set3 <- left_join(set1,set2, by="game_id")
 
 set3 <- set3 %>% 
-          mutate(score_differential2 = ifelse(posteam == away_team, -score_differential2, score_differential))
+          mutate(score_differential2 = ifelse(posteam == away_team, -score_differential2, score_differential2))
 set3 <- set3 %>% 
           mutate(
             comeback = case_when(
@@ -36,6 +37,7 @@ prediction <- prediction %>%
                 mutate(prob = (prob*100))
 prediction <- prediction %>% 
                 mutate(prob = round(prob, digits = 2))
+prediction2 <- prediction
 prediction <- prediction %>% 
                 mutate(prob = paste0(prob, "%"))
 prediction
@@ -52,6 +54,6 @@ prediction %>%
   count(comeback, prob) %>% 
   mutate(comeback = fct_reorder(comeback, n, sum)) %>% 
   ggplot() +
-  geom_col(aes(x=comeback, y = prob, fill = prob), ylim = c(0,100)) +
+  geom_col(aes(x=comeback, y = prob, fill = prob)) +
   scale_fill_manual(values = c("black", "#6d6d6d", "#373737")) +
   labs(x = "end result")
