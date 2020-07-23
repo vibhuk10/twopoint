@@ -7,8 +7,13 @@ create_prob_two <- function(quarter, timeleft) {
     mutate(prob = n/(sum(n)))
   prob_two <- prob_two %>% 
     mutate(prob = round(prob, digits = 3))
+  prob_two <- prob_two %>% 
+    mutate(key = case_when(
+      two_point_conv_result == "failure" ~ 2,
+      two_point_conv_result == "success" ~ 1,
+    ))
 }
-create_prob_score <- function(quarter, timeleft, score) {
+create_prob_score <- function(quarter, timeleft, score, result) {
     base_plays <- data %>% 
       filter(qtr == quarter & quarter_seconds_remaining>(timeleft-50) & quarter_seconds_remaining<(timeleft+50) & score_differential == score) %>% 
       select(game_id, posteam, home_team, away_team, score_differential, qtr, quarter_seconds_remaining, desc, game_date) %>% 
@@ -33,9 +38,7 @@ create_prob_score <- function(quarter, timeleft, score) {
     combined <- combined %>% 
       mutate(
         comeback = case_when(
-          score_differential2 == 0 ~ "tie",
-          score_differential2 > 0 ~ "win",
-          score_differential2 < 0 ~ "loss",
+          score_differential2 > 0 ~ "win"
         )
       )
     combined <- combined %>% 
@@ -46,10 +49,20 @@ create_prob_score <- function(quarter, timeleft, score) {
       mutate(prob = n/(sum(n)))
     prediction <- prediction %>% 
       mutate(prob = round(prob, digits = 4))
+    prediction <- na.omit(prediction)
+    prediction <- prediction %>% 
+      mutate(key = ifelse(result == 'yes', 1, 2))
     return(prediction)
 }
-prob_two <- create_prob_two(2,200)
-prediction_yes <- create_prob_score(2,200,(-2+2))
-prediction_no <- create_prob_score(2,200,-2)
-prediction_yes
-prediction_no
+create_prob_final <- function(two, yes, no) {
+  yes_no <- rbind(yes, no)
+  final <- two %>% full_join(yes_no, by = "key")
+  final <-  final %>% rename(n_two = n.x, prob_two = prob.x, n_game = n.y, prob_game = prob.y)
+  final <- final %>%  mutate(multiplied = prob_two*prob_game)
+  final <- final %>%  mutate(prob_final = sum(multiplied))
+}
+prob_two <- create_prob_two(4,200)
+prediction_yes <- create_prob_score(4,200,(-6+2), 'yes')
+prediction_no <- create_prob_score(4,200,-6, 'no')
+final <- create_prob_final(prob_two, prediction_yes, prediction_no)
+final
