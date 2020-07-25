@@ -35,10 +35,16 @@ extrapoint <- select(extrapoint, extra_point_result, play_id, game_id, home_team
 extrapoint <- mutate(extrapoint, year = str_sub(game_date,1,4))
 extrapoint %>% write_csv("data-clean/extrapoint_2009-2019.csv")
 
+kickoffs <- filter(data, play_type == "kickoff")
+kickoffs <- select(kickoffs, play_type, game_id, posteam, defteam, home_team, away_team, score_differential, qtr, quarter_seconds_remaining, desc, game_date, total_home_score, total_away_score)
+kickoffs %>% write_csv("data-clean/kickoffs_2009-2019.csv")
 
-twopoint <- read_csv("data-clean/twopoint_2009-2019.csv")
+library(tidyverse)
 data <- read_csv("data-raw/NFL_pbp_2009-2019.csv")
+twopoint <- read_csv("data-clean/twopoint_2009-2019.csv")
 extrapoint <- read_csv("data-clean/extrapoint_2009-2019.csv")
+
+kickoffs <- read_csv("data-clean/kickoffs_2009-2019.csv")
 
 twopoint2 <- read_csv("data-clean/twopoint_2009-2018.csv")
 data_09_18 <- read_csv("data-raw/NFL Play by Play 2009-2018 (v5).csv")

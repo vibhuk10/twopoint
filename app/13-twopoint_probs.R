@@ -104,4 +104,4 @@ display <- function(quarter, seconds, score) {
   )
   final
 }
-display(1, 400, 4)
+display(4, 400, -2)
