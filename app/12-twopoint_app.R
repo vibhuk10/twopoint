@@ -1,5 +1,5 @@
 library(shiny)
-source("13-twopoint_probs.R")
+source("./app/13-twopoint_probs.R")
 ui <- pageWithSidebar(
   
   # App title ----
@@ -13,7 +13,7 @@ ui <- pageWithSidebar(
                             "2nd" = 2,
                             "3rd" = 3,
                             "4th" = 4)),
-    textInput("time", "Seconds Remaining in the Quarter:", "02:00"),
+    textInput("time", "Seconds Remaining in the Quarter:", "2:00"),
     numericInput("score", "Score Differential:", -2),
     sliderInput("lower_bound", "Input Amount of Seconds for Lower Bound of Time Left:",
                 min = -900, max = 0, value = -100, step = 10),
@@ -39,12 +39,10 @@ server <- function(input, output) {
     lower_boundInput <- input$lower_bound
     upper_boundInput <- input$upper_bound
     
-    timeInput <- time_to_seconds(timeInput)
-    
     probabilities_table <- 
       display(
         quarter = qtrInput,
-        seconds = timeInput,
+        time = timeInput,
         score = scoreInput,
         lower_seconds_bound = lower_boundInput,
         upper_seconds_bound = upper_boundInput,
@@ -52,6 +50,8 @@ server <- function(input, output) {
         extra_data = extrapoint,
         full_data = data
       )
+    
+    theme_set(theme_classic(base_size = 16))
     
     probabilities_table %>% 
       ggplot(aes(x = play_type, y = win_prob, fill = play_type)) +

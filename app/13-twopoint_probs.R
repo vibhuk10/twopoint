@@ -1,11 +1,12 @@
 time_to_seconds <- function(time) {
   # this functions takes in string time input and outputs the time in seconds
-  
   minutes <- 
-    str_sub(time, 1,2) %>% 
+    str_sub(time, 1, str_locate(time, ":")[1, 1] - 1)
+  minutes <- 
     as.numeric(minutes) * 60
   seconds <- 
-    str_sub(time, 4,5) %>% 
+    str_sub(time, str_locate(time, ":")[1, 1] + 1)
+  seconds <- 
     as.numeric(seconds)
   seconds_left <- minutes + seconds
   seconds_left
@@ -73,13 +74,24 @@ create_prob_extra <- function(quarter, timeleft, data) {
 create_prob_score <- function(quarter, timeleft, score, result, lower_seconds_bound, upper_seconds_bound, data) {
   # this functions takes in the quarter, timeleft, score, and result and outputs the probabilities of winning
   
-    base_plays <- 
-      data %>% 
-      filter(qtr == quarter & quarter_seconds_remaining>(timeleft+lower_seconds_bound) & quarter_seconds_remaining<(timeleft+upper_seconds_bound) & score_differential == (-1*score) & play_type == "kickoff") %>% 
-      select(game_id, posteam, defteam, home_team, away_team, score_differential, qtr, quarter_seconds_remaining, desc, game_date) %>% 
-      group_by(game_id) %>% 
-      slice(n()) %>% 
-      ungroup()
+  base_plays1 <- 
+    data %>% 
+    filter(qtr == quarter & quarter_seconds_remaining>(timeleft+lower_seconds_bound) & quarter_seconds_remaining<(timeleft+upper_seconds_bound) & score_differential == (-1*score) & play_type == "kickoff") %>% 
+    select(game_id, posteam, defteam, home_team, away_team, score_differential, qtr, quarter_seconds_remaining, desc, game_date, play_type) %>% 
+    group_by(game_id) %>% 
+    slice(n()) %>% 
+    ungroup()
+  
+  base_plays2 <- 
+    data %>% 
+    filter(qtr == quarter & quarter_seconds_remaining>(timeleft+lower_seconds_bound) & quarter_seconds_remaining<(timeleft+upper_seconds_bound) & score_differential == (-1*score) & yardline_100 < 85 & yardline_100 > 70) %>% 
+    select(game_id, posteam, defteam, home_team, away_team, score_differential, qtr, quarter_seconds_remaining, desc, game_date, play_type) %>% 
+    group_by(game_id) %>% 
+    slice(1) %>% 
+    ungroup()
+  
+  base_plays <- rbind(base_plays1, base_plays2)
+  base_plays <- distinct(base_plays, game_id, .keep_all = TRUE)
     
     last_plays <- 
       data %>% 
@@ -133,7 +145,12 @@ create_prob_final <- function(two, yes, no) {
   final_prob
 }
 
-display <- function(quarter, seconds, score, lower_seconds_bound, upper_seconds_bound, two_data, extra_data, full_data) {
+display <- function(quarter, time, score, lower_seconds_bound, upper_seconds_bound, two_data, extra_data, full_data) {
+  
+  # convert time as a string to seconds
+  seconds <- 
+    time_to_seconds(time)
+  
   # summarize two point conversions from this quarter
   prob_two <- 
     create_prob_two(
@@ -213,10 +230,10 @@ display <- function(quarter, seconds, score, lower_seconds_bound, upper_seconds_
 }
 
 display(quarter = 4,
-        seconds = 90,
+        time = "0:20",
         score = -2,
-        lower_seconds_bound = -100,
-        upper_seconds_bound = 100,
+        lower_seconds_bound = -50,
+        upper_seconds_bound = 50,
         two_data = twopoint,
         extra_data = extrapoint,
         full_data = data
