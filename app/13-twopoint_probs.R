@@ -71,21 +71,19 @@ create_prob_extra <- function(quarter, timeleft, data) {
   prob_extra
 }
 
-create_prob_score <- function(quarter, timeleft, score, result, lower_seconds_bound, upper_seconds_bound, data) {
+create_prob_score <- function(quarter, timeleft, score, result, lower_seconds_bound, upper_seconds_bound, kickoffs_data, last_plays_data) {
   # this functions takes in the quarter, timeleft, score, and result and outputs the probabilities of winning
   
   base_plays1 <- 
-    data %>% 
+    kickoffs_data %>% 
     filter(qtr == quarter & quarter_seconds_remaining>(timeleft+lower_seconds_bound) & quarter_seconds_remaining<(timeleft+upper_seconds_bound) & score_differential == (-1*score) & play_type == "kickoff") %>% 
-    select(game_id, posteam, defteam, home_team, away_team, score_differential, qtr, quarter_seconds_remaining, desc, game_date, play_type) %>% 
     group_by(game_id) %>% 
     slice(n()) %>% 
     ungroup()
   
   base_plays2 <- 
-    data %>% 
+    kickoffs_data %>% 
     filter(qtr == quarter & quarter_seconds_remaining>(timeleft+lower_seconds_bound) & quarter_seconds_remaining<(timeleft+upper_seconds_bound) & score_differential == (-1*score) & yardline_100 < 85 & yardline_100 > 70) %>% 
-    select(game_id, posteam, defteam, home_team, away_team, score_differential, qtr, quarter_seconds_remaining, desc, game_date, play_type) %>% 
     group_by(game_id) %>% 
     slice(1) %>% 
     ungroup()
@@ -93,30 +91,22 @@ create_prob_score <- function(quarter, timeleft, score, result, lower_seconds_bo
   base_plays <- rbind(base_plays1, base_plays2)
   base_plays <- distinct(base_plays, game_id, .keep_all = TRUE)
     
-    last_plays <- 
-      data %>% 
-      select(game_id, home_team, posteam, defteam, total_home_score, total_away_score, qtr, quarter_seconds_remaining) %>%
-      rename(home_team2 = home_team, posteam2 = posteam, defteam2 = defteam, qtr2 = qtr, quarter_seconds_remaining2 = quarter_seconds_remaining) %>% 
-      group_by(game_id) %>% 
-      slice(n()) %>% 
-      ungroup() %>% 
-      mutate(score_differential2 = total_home_score-total_away_score)
     
     combined <- 
       base_plays %>% 
-      left_join(last_plays, by = "game_id") %>% 
+      left_join(last_plays_data, by = "game_id") %>% 
       mutate(
         score_differential2 = ifelse(defteam == away_team, -score_differential2, score_differential2),
         comeback = case_when(
           score_differential2 > 0 ~ "win"
-        ), 
-        overtime = ifelse(qtr2 == 5, TRUE, FALSE)
+        )
       )
     
     prediction <- 
       combined %>% 
       count(comeback) %>% 
       mutate(
+        count = sum(n),
         prob = n/(sum(n)),
         prob = round(prob, digits = 4)
         ) %>% 
@@ -128,6 +118,7 @@ create_prob_score <- function(quarter, timeleft, score, result, lower_seconds_bo
 
 create_prob_final <- function(two, yes, no) {
   # this functions combines the probabities using expected probabilty output the final probabilty of winning the game
+  
   yes_no <- rbind(yes, no)
   
   final <- two %>% 
@@ -145,9 +136,15 @@ create_prob_final <- function(two, yes, no) {
   final_prob
 }
 
-display <- function(quarter, time, score, lower_seconds_bound, upper_seconds_bound, two_data, extra_data, full_data) {
+amount_of_games <- function(yes_data, no_data) {
+  # this functions takes the data used and outputs the amount of games used to come up with the probabilities
   
-  # convert time as a string to seconds
+  games <- yes_data$count + no_data$count
+}
+
+display <- function(quarter, time, score, lower_seconds_bound, upper_seconds_bound, two_data, extra_data, kickoffs_data, last_plays_data) {
+
+  # convert time (string) to seconds (numeric)
   seconds <- 
     time_to_seconds(time)
   
@@ -176,7 +173,8 @@ display <- function(quarter, time, score, lower_seconds_bound, upper_seconds_bou
       result = "yes",
       lower_seconds_bound,
       upper_seconds_bound,
-      data = full_data
+      kickoffs_data = kickoffs_data,
+      last_plays_data = last_plays_data
     )
   
   # calculate probability you'd win if you didn't the 2pt attempt or extra point based on past games
@@ -188,7 +186,8 @@ display <- function(quarter, time, score, lower_seconds_bound, upper_seconds_bou
       result = 'no',
       lower_seconds_bound,
       upper_seconds_bound,
-      data = full_data
+      kickoffs_data = kickoffs_data,
+      last_plays_data = last_plays_data
     )
   
   # calculate probability you'd win if you made the extra point based on past games
@@ -200,7 +199,8 @@ display <- function(quarter, time, score, lower_seconds_bound, upper_seconds_bou
       result = "yes",
       lower_seconds_bound,
       upper_seconds_bound,
-      data = full_data
+      kickoffs_data = kickoffs_data,
+      last_plays_data = last_plays_data
     )
   
   # uses expected probability to create a final win probability if you went for the two point conversion
@@ -219,22 +219,38 @@ display <- function(quarter, time, score, lower_seconds_bound, upper_seconds_bou
       prediction_no
     )
   
+  #summarizes the number of games used to calculate the probability given for two point conversion
+  games_two <- 
+    amount_of_games(
+      yes_data =  prediction_yes_two,
+      no_data = prediction_no
+    )
+  
+  #summarizes the number of games used to calculate the probability given for extra point
+  games_extra <- 
+    amount_of_games(
+      yes_data =  prediction_yes_extra,
+      no_data = prediction_no
+    )
+  
   #creates a table with win probabilities for each option
   final <- 
     tibble(
       play_type = c("two point", "extra point"),
       win_prob = c(final_two, final_extra),
+      games = c(games_two, games_extra)
     )
   
   final
 }
 
-display(quarter = 4,
-        time = "0:20",
-        score = -2,
+display(quarter = 3,
+        time = "2:20",
+        score = -3,
         lower_seconds_bound = -50,
         upper_seconds_bound = 50,
         two_data = twopoint,
         extra_data = extrapoint,
-        full_data = data
+        kickoffs_data = kickoffs,
+        last_plays_data = last_plays
         )

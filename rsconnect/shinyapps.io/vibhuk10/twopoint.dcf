@@ -1,0 +1,13 @@
+name: twopoint
+title: twopoint
+username:
+account: vibhuk10
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2629217
+bundleId: 3456818
+url: https://vibhuk10.shinyapps.io/twopoint/
+when: 1596151946.51078
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: 01-loaddata.R|15-rsconnect.R|R projects - Shortcut.lnk|06_files/figure-gfm/unnamed-chunk-1-1.png|06_files/figure-gfm/unnamed-chunk-2-1.png|app/07-probabilities.R|app/08-apptest.R|data-raw/NFL Play by Play 2009-2018 (v5).csv|data-raw/NFL_pbp_2009-2019.csv|graphs/playtypegraph.PNG|graphs/quartergraph.PNG|graphs/teamsgraph.PNG|graphs/yeargraph.PNG|two point analysis/02-peryear.R|two point analysis/03-playtype.R|two point analysis/04-team.R|two point analysis/05-quarter.R|two point analysis/09-extrapoint.R|learning
