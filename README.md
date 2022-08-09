@@ -1,8 +1,6 @@
-# todos
-
-1. make a data subset and save it to "data-clean"" folder (only two point conversion and get rid of some columns)
-1. For ech year, how many two point conversion attemps were there and how many were successful
-1. which is more successful for two point conversions, running or passing?
-1. Which team go for 2 the most and which team go for 2 the least
-1. which quarter do teams go for 2 the most and which quarter do teams go for 2 the least
-1. make 5 graphs total, one for each
+# Two Point Conversion Decision Tool
+  By Vibhu Krishnan
+  
+  Many coaches struggle with the decision to go for it on a two point conversion. In today's NFl, most coaches only go for two when they are desperate need for points.     After conducting research and creatibng this tool, I have discovered many scenarios where it is advantegous to go for two as early as the 4th quarter. Using previous     years of NFL play by play data, I have created a tool that will output win probabilities given a certain situation and inform a coach or fan if the best decision is to   kick an extra point or go for two after scoring a touchdown.
+  
+  Check out the tool here: https://vibhuk10.shinyapps.io/twopoint/
